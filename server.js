@@ -1,4 +1,6 @@
 import authRoutes from './routes/auth.js';
+import transactionRoutes from './routes/transactions.js'
+
 import express from "express";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
@@ -13,6 +15,9 @@ server.use(express.json());
 
 // Rutas de autenticación (Middleware)
 server.use('/api/auth', authRoutes);
+
+// Rutas de transacciones (Middleware)
+server.use('/api/transactions', transactionRoutes);
 
 // conexion a Mongo
 mongoose.connect(config.MONGO_URI).then(() => {
