@@ -1,0 +1,20 @@
+# Ignorar todos los archivos con extensión .log
+*.log
+
+# Ignorar el directorio node_modules
+node_modules/
+
+# Ignorar archivos de configuración específicos
+.env
+config.js
+
+# Ignorar directorios de compilación
+dist/
+build/
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos específicos
+secret.txt
