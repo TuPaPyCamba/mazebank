@@ -7,10 +7,23 @@ import mongoose from "mongoose";
 import session from "express-session";
 import { config } from "./config.js";
 import 'colors'
-import second from 'body-parser'
 import bodyParser from 'body-parser';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import xss from 'xss-clean'
 
 const server = express();
+
+server.use(helmet())
+
+const limiter = rateLimit({
+    windowMs: 15*60*1000,
+    max: 100
+})
+
+server.use(limiter)
+
+server.use(xss())
 
 // Middlewares
 server.use(bodyParser.json());

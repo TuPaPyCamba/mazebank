@@ -142,4 +142,84 @@ router.get('/history', verifyToken, async (req, res) => {
     }
 });
 
+/**
+ * @route POST /api/transactions/transfer
+ * @desc Transferir un monto entre dos cuentas 
+ * @access Privado
+ * @returns {Array} - [{ message: 'Transfer successful', fromBalance: fromUser.balance, toBalance: toUser.balance }]
+ */
+router.post('/transfer', verifyToken, async (req, res) => {
+    const { toUserId, amount } = req.body;
+
+    if (!toUserId || !amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).send({ error: 'Invalid recipient or amount' });
+    }
+
+    try {
+        const fromUser = await User.findById(req.userId);
+        const toUser = await User.findById(toUserId);
+
+        if (!fromUser || !toUser) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+
+        if (fromUser.balance < amount) {
+            return res.status(400).send({ error: 'Insufficient funds' });
+        }
+
+        fromUser.balance -= amount;
+        toUser.balance += amount;
+
+        await fromUser.save();
+        await toUser.save();
+
+        const transfer = new Transfer({
+            fromUserId: fromUser._id,
+            toUserId: toUser._id,
+            amount,
+            date: new Date()
+        });
+
+        await transfer.save();
+
+        res.json({ message: 'Transfer successful', fromBalance: fromUser.balance, toBalance: toUser.balance });
+    } catch (error) {
+        res.status(500).send({ error: 'Error processing transfer', details: error.message });
+    }
+});
+
+router.get('/report', verifyToken, async (req, res) => {
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+        return res.status(400).send({ error: 'Month and year are required' });
+    }
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    try {
+        const transactions = await Transaction.find({
+            userId: req.userId,
+            date: {
+                $gte: startDate,
+                $lte: endDate
+            }
+        });
+
+        const deposits = transactions.filter(t => t.type === 'deposit').reduce((sum, t) => sum + t.amount, 0);
+        const withdrawals = transactions.filter(t => t.type === 'withdraw').reduce((sum, t) => sum + t.amount, 0);
+
+        res.json({
+            month,
+            year,
+            deposits,
+            withdrawals,
+            balance: deposits - withdrawals
+        });
+    } catch (error) {
+        res.status(500).send({ error: 'Error generating report', details: error.message });
+    }
+});
+
 export default router;
