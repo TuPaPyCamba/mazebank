@@ -70,6 +70,7 @@ router.post('/deposit', verifyToken, async (req, res) => {
             userId: user._id,
             type: 'deposit',
             amount: amount,
+            date: new Date()
         });
         await transaction.save();
 
@@ -116,6 +117,7 @@ router.post('/withdraw', verifyToken, async (req, res) => {
             userId: user._id,
             type: 'withdraw',
             amount: amount,
+            dare: new Date()
         });
         await transaction.save();
 

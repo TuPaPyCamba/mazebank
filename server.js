@@ -7,11 +7,13 @@ import mongoose from "mongoose";
 import session from "express-session";
 import { config } from "./config.js";
 import 'colors'
+import second from 'body-parser'
+import bodyParser from 'body-parser';
 
 const server = express();
 
 // Middlewares
-server.use(express.json());
+server.use(bodyParser.json());
 
 // Rutas de autenticación (Middleware)
 server.use('/api/auth', authRoutes);
@@ -42,16 +44,6 @@ server.use(session({
         maxAge: 180 * 60 * 1000 // Tiempo de vida de la cookie (180 minutos)
     }
 }));
-
-server.get('/test-session', (req, res) => {
-    if (req.session.views) {
-        req.session.views++;
-        res.send(`Number of views: ${req.session.views}`);
-    } else {
-        req.session.views = 1;
-        res.send('Welcome! This is your first visit.');
-    }
-});
 
 // Iniciar el servidor
 server.listen(config.PORT, () => {

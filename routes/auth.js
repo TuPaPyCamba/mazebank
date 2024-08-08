@@ -1,6 +1,5 @@
 import express from 'express';
 import User from '../models/User.js';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import 'colors';
@@ -80,7 +79,7 @@ router.post('/login', async (req, res) => {
         res.json({ token });
         console.log(
             `SERVER:`.green +
-            ` A new session has been started, the session started is \n Name: ${user.name} \n`
+            ` A new session has been started, the session started is \n Name: ${user.name} \n Password: ***** \n `
         );
     } catch (error) {
         res
