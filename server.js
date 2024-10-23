@@ -5,34 +5,36 @@ import express from "express";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
 import session from "express-session";
-import { config } from "./config.js";
+import config from "./config.js";
 import 'colors'
 import bodyParser from 'body-parser';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import xss from 'xss-clean'
+import cors from 'cors'
+import authenticateToken from './routes/authenticateToken.js';
 
 const server = express();
 
-server.use(helmet())
+server.use(cors({
+    origin:'http://localhost:3000',
+    methods: 'GET, POST, PUT, DELETE',
+    credentials: true
+}))
 
 const limiter = rateLimit({
     windowMs: 15*60*1000,
     max: 100
 })
 
+server.use(helmet())
+
 server.use(limiter)
 
 server.use(xss())
 
 // Middlewares
-server.use(bodyParser.json());
-
-// Rutas de autenticación (Middleware)
-server.use('/api/auth', authRoutes);
-
-// Rutas de transacciones (Middleware)
-server.use('/api/transactions', transactionRoutes);
+server.use(bodyParser.json())
 
 // conexion a Mongo
 mongoose.connect(config.MONGO_URI).then(() => {
@@ -42,7 +44,16 @@ mongoose.connect(config.MONGO_URI).then(() => {
         `MONGOOSE`.yellow +
         ` database \n`
     )
-}).catch((err) => console.error("SERVER:".green + ` Error de conexión:` + `${err}`.red))
+}).catch((err) => console.error("SERVER:".green + ` Error de conexión: ` + `${err}`.red))
+
+// Rutas de autenticación (Middleware)
+server.use('/api/auth', authRoutes)
+
+// Rutas de transacciones (Middleware)
+server.use('/api/transactions', transactionRoutes)
+
+// Rutas Protegidas (Middleware)
+server.use('/api/dashboard', authenticateToken, dashboardRoutes)
 
 // Configuración de sesiones
 server.use(session({

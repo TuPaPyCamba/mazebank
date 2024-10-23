@@ -1,14 +1,14 @@
 import express from 'express';
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import { config } from '../config.js';
+import config from '../config.js';
 import 'colors';
 
 const router = express.Router();
 
 // Ruta para registrarse
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { userName, name, surnames:{ paternal, maternal}, email, phoneNumber, birthdate, placeOfBirth:{ city, state, country}, address, rfc, occupation, password, passwordConfirm } = req.body;
 
     try {
         Validation.name(name);
@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
             return res.status(400).send({ error: errorMessage });
         }
 
-        const newUser = new User({ name, email, password });
+        const newUser = new User({ userName, name, surnames:{ paternal, maternal}, email, phoneNumber, birthdate, placeOfBirth:{ city, state, country}, address, rfc, occupation, password, passwordConfirm });
         await newUser.save();
         res.status(201).json({ message: 'Usuario registrado exitosamente' });
         console.log(
@@ -64,12 +64,12 @@ router.post('/login', async (req, res) => {
             );
             return res.status(400).send({ error: errorMessage });
         }
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await user.comparePassword(password)
         if (!isMatch) {
             const errorMessage = "password is invalid";
             console.log(
                 `SERVER:`.green +
-                ` Error when trying to login into an account, with the following data \n Name: ${user.name} \n Password: ***** \n ` +
+                ` Error when trying to login into an account, with the following data \n Email: ${email} \n Password: ***** \n ` +
                 `ESTATUS: (401)`.red +
                 ` ${errorMessage} \n`
             );
@@ -79,7 +79,7 @@ router.post('/login', async (req, res) => {
         res.json({ token });
         console.log(
             `SERVER:`.green +
-            ` A new session has been started, the session started is \n Name: ${user.name} \n Password: ***** \n `
+            ` A new session has been started, the session started is \n Email: ${email} \n Password: ***** \n `
         );
     } catch (error) {
         res
@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
             .send({ error: "Error en el servidor", details: error.message });
         console.log(
             `SERVER:`.green +
-            ` Error when trying to login into an account, with the following data \n Name: ${user.name} \n Password: ***** \n ` +
+            ` Error when trying to login into an account, with the following data \n Email: ${email} \n Password: ***** \n ` +
             `ESTATUS: (401)`.red +
             ` ${error.message} \n`
         );
