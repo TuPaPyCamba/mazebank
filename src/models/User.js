@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     },
+    profileImg: {
+        type: String, 
+        default: 'https://wallpaperaccess.com/full/785538.jpg', 
+    },
     email: {
         type: String,
         required: true,
@@ -81,7 +85,7 @@ userSchema.pre('save', async function(next) {
 // Método para comparar la contraseña
 userSchema.methods.comparePassword = async function(password) {
     return await bcrypt.compare(password, this.password);
-};
+}
 
 const User = mongoose.model('User', userSchema);
 
